@@ -1,0 +1,23 @@
+{
+    "name": "game",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "serve": "webpack serve",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@babel/core": "^7.2.2",
+        "@babel/preset-env": "^7.3.1",
+        "@webpack-cli/serve": "^1.6.0",
+        "babel-loader": "^8.0.5",
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1",
+        "webpack-dev-server": "^4.7.2",
+        "html-webpack-plugin": "^5.3.2"
+    }
+}
