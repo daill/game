@@ -1,6 +1,6 @@
 import shaderCode from "./shader.wgsl";
 
-let adapter, device, canvas, context, shadermodule, vertexBuffer, renderPipeline;
+let adapter, device, canvas, context, shadermodule, cube;
 const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
 
 async function init() {
@@ -16,67 +16,8 @@ async function init() {
     format: 'bgra8unorm'
   });
 
-  shadermodule = device.createShaderModule({
-    code: shaderCode
-  });
 
-  const vertices = new Float32Array([
-    -0.5,  0.6, 0, 1, 1, 0, 1, 1,
-    -0.5, -0.6, 0, 1, 1, 0, 1, 1,
-    0.5, -0.6, 0, 1, 1, 1, 1, 1,
-
-    0.5, 0.6, 0, 1, 1, 0, 1, 1,
-    -0.5, 0.6, 0, 1, 1, 0, 1, 1,
-    0.5, -0.6, 0, 1, 1, 1, 1, 1
-  ]);
-
-  vertexBuffer = device.createBuffer({
-    size: vertices.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    mappedAtCreation: true
-  });
-
-  // cast arraybuffer to array of our choice and add the vertices of the triangle
-  new Float32Array(vertexBuffer.getMappedRange()).set(vertices);
-  vertexBuffer.unmap();
-
-
-  // desscribing the layout of the buffer
-  const vertexBuffers = [{
-    attributes: [{
-      shaderLocation: 0, // position
-      offset: 0,
-      format: 'float32x4'
-    }, {
-      shaderLocation: 1, // color
-      offset: 16,
-      format: 'float32x4'
-    }],
-    arrayStride: 32,
-    stepMode: 'vertex'
-  }];
-
-  // describing how the pipeline parts incooperate with the buffers
-  const pipelineDescriptor = {
-    vertex: {
-      module: shadermodule,
-      entryPoint: 'vertex_main',
-      buffers: vertexBuffers
-    },
-    fragment: {
-      module: shadermodule,
-      entryPoint: 'fragment_main',
-      targets: [{
-        format: 'bgra8unorm'
-      }]
-    },
-    primitive: {
-      topology: 'triangle-list'
-    }
-  };
-
-  renderPipeline = device.createRenderPipeline(pipelineDescriptor);
-
+  cube = new Cube(device);
 
 }
 
@@ -93,11 +34,9 @@ function draw() {
   };
   
   const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+  
+  cube.draw(passEncoder);
 
-  passEncoder.setPipeline(renderPipeline);
-  passEncoder.setVertexBuffer(0, vertexBuffer);
-  passEncoder.draw(6);
-  passEncoder.endPass();
   device.queue.submit([commandEncoder.finish()]);
   
   requestAnimationFrame(() => {
@@ -106,8 +45,9 @@ function draw() {
 }
 
 function showWarning(e) {
-  document.querySelector('#gpuCanvas').style.display = 'none';
+  document.querySelector('#webgpu-canvas').style.display = 'none';
   document.querySelector('.warning').style.display = 'block';
+  document.querySelector('.warning').innerHTML = e;
 }
 
 async function main() {
@@ -117,6 +57,77 @@ async function main() {
     showWarning(e);
   }
   draw();
+}
+
+
+class Cube {
+  constructor(device) {
+    this.device = device;
+
+    this.shadermodule = device.createShaderModule({
+      code: shaderCode
+    });
+    // desscribing the layout of the buffer
+    this.vertexBuffers = [{
+      attributes: [{
+        shaderLocation: 0, // position
+        offset: 0,
+        format: 'float32x4'
+      }, {
+        shaderLocation: 1, // color
+        offset: 16,
+        format: 'float32x4'
+      }],
+      arrayStride: 32,
+      stepMode: 'vertex'
+    }];
+
+    // describing how the pipeline parts incooperate with the buffers
+    this.pipelineDescriptor = {
+      vertex: {
+        module: this.shadermodule,
+        entryPoint: 'vertex_main',
+        buffers: this.vertexBuffers
+      },
+      fragment: {
+        module: this.shadermodule,
+        entryPoint: 'fragment_main',
+        targets: [{
+          format: 'bgra8unorm'
+        }]
+      },
+      primitive: {
+        topology: 'triangle-strip'
+      }
+    };
+
+    this.renderPipeline = device.createRenderPipeline(this.pipelineDescriptor);
+
+    this.vertices = new Float32Array([
+      -0.5, -0.6, 0, 1, 1, 0, 1, 1,
+      -0.5, 0.6, 0, 1, 1, 0, 1, 1,
+      0.5, -0.6, 0, 1, 1, 0.1, 0.2, 0.1,
+      0.5, 0.6, 0, 1, 1, 0, 1, 1,      
+    ]);
+
+  }
+
+  draw(passEncoder) { 
+    this.vertexBuffer = device.createBuffer({
+      size: this.vertices.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      mappedAtCreation: true
+    });
+
+    // cast arraybuffer to array of our choice and add the vertices of the triangle
+    new Float32Array(this.vertexBuffer.getMappedRange()).set(this.vertices);
+    this.vertexBuffer.unmap();
+    
+    passEncoder.setPipeline(this.renderPipeline);
+    passEncoder.setVertexBuffer(0, this.vertexBuffer);
+    passEncoder.draw(4);
+    passEncoder.endPass();
+  }
 }
 
 window.addEventListener('load', main);
