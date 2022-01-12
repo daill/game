@@ -104,10 +104,12 @@ class Cube {
     this.renderPipeline = device.createRenderPipeline(this.pipelineDescriptor);
 
     this.vertices = new Float32Array([
-      -0.5, -0.6, 0, 1, 1, 0, 1, 1,
+      -0.5, -0.6, 0, 1, 1, 2, 1, 1,
       -0.5, 0.6, 0, 1, 1, 0, 1, 1,
       0.5, -0.6, 0, 1, 1, 0.1, 0.2, 0.1,
-      0.5, 0.6, 0, 1, 1, 0, 1, 1,      
+      0.5, 0.6, 0, 1, 1, 0, 1, 1,
+      0.8, 0.0, 0, 1, 1, 0.1, 0.2, 0.1,
+      
     ]);
 
   }
@@ -125,7 +127,7 @@ class Cube {
     
     passEncoder.setPipeline(this.renderPipeline);
     passEncoder.setVertexBuffer(0, this.vertexBuffer);
-    passEncoder.draw(4);
+    passEncoder.draw(5);
     passEncoder.endPass();
   }
 }
