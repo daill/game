@@ -1,5 +1,5 @@
-let vert = 0;
-let hor = 0;
+export let vert = 0;
+export let hor = 0;
 
 document.addEventListener('keydown', (event) => {
   const keyName = event.key;

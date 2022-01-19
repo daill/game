@@ -1,5 +1,6 @@
 import shaderCode from "./shader.wgsl";
 import { mat4, vec3 } from 'gl-matrix';
+import { vert, hor} from "./controls";
 
 let adapter, device, canvas, context, cube, aspect, infos;
 const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
@@ -27,7 +28,7 @@ async function init() {
 
 function getTransformationMatrix(projectionMatrix) {
   const viewMatrix = mat4.create();
-  mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(0, vert, -3));
+  mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(hor, vert, -3));
   const now = Date.now() / 1000;
   mat4.rotate(
     viewMatrix,
