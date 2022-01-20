@@ -27,27 +27,18 @@ async function init() {
 
 
 function getTransformationMatrix(projectionMatrix) {
-  const viewMatrix = mat4.create();
-  mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(hor, vert, -3));
-  mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
-
   const now = Date.now() / 1000;
-
   const rotQuat = quat.create();
-  quat.fromEuler(rotQuat, Math.sin(now), Math.cos(now), 0);
-
-
+  quat.fromEuler(rotQuat, Math.sin(now)*(180 / Math.PI), Math.cos(now)*(180 / Math.PI), 0);
   const modelViewProjectionMatrix = mat4.create();
-
-
   mat4.fromRotationTranslationScale(modelViewProjectionMatrix, rotQuat, vec3.fromValues(hor, vert, -3), vec3.fromValues(1,1,1))
+  mat4.multiply(modelViewProjectionMatrix, projectionMatrix, modelViewProjectionMatrix);
   return Float32Array.from(modelViewProjectionMatrix);
 }
 
 let then = 0;
 function draw() {
   const commandEncoder = device.createCommandEncoder();
-  
   const renderPassDescriptor = {
     colorAttachments: [{
       loadValue: clearColor,
@@ -173,6 +164,7 @@ class Cube {
     
 
     this.transformationMatrix = getTransformationMatrix(this.projectionMatrix);
+    
     this.device.queue.writeBuffer(
       this.uniformBuffer,
       0,
