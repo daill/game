@@ -1,5 +1,5 @@
 import shaderCode from "./shader.wgsl";
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, quat } from 'gl-matrix';
 import { vert, hor} from "./controls";
 
 let adapter, device, canvas, context, cube, aspect, infos;
@@ -29,17 +29,18 @@ async function init() {
 function getTransformationMatrix(projectionMatrix) {
   const viewMatrix = mat4.create();
   mat4.translate(viewMatrix, viewMatrix, vec3.fromValues(hor, vert, -3));
+  mat4.multiply(viewMatrix, projectionMatrix, viewMatrix);
+
   const now = Date.now() / 1000;
-  mat4.rotate(
-    viewMatrix,
-    viewMatrix,
-    1,
-    vec3.fromValues(Math.sin(now), Math.cos(now), 0)
-  );
+
+  const rotQuat = quat.create();
+  quat.fromEuler(rotQuat, Math.sin(now), Math.cos(now), 0);
+
 
   const modelViewProjectionMatrix = mat4.create();
-  mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
 
+
+  mat4.fromRotationTranslationScale(modelViewProjectionMatrix, rotQuat, vec3.fromValues(hor, vert, -3), vec3.fromValues(1,1,1))
   return Float32Array.from(modelViewProjectionMatrix);
 }
 
