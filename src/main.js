@@ -23,8 +23,23 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
+  let model = await loadModel("Box0.bin");
 }
 
+
+async function loadModel(fileName) {
+  let content;
+  await new Promise(function(resolve) {
+    var reader = new FileReader();
+
+    reader.onloadend = function() {
+      content = reader.result;
+    };
+
+    reader.readAsArrayBuffer(fileName);
+  });
+  return content;
+}
 
 function getTransformationMatrix(projectionMatrix) {
   const now = Date.now() / 1000;
