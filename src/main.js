@@ -1,7 +1,7 @@
 import shaderCode from "./shader.wgsl";
 import { mat4, vec3, quat } from 'gl-matrix';
 import { vert, hor} from "./controls";
-
+import {loadModel} from "./loader.js";
 
 
 let adapter, device, canvas, context, cube, aspect, infos;
@@ -25,9 +25,9 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
-  
-  console.log(JSON.parse(BoxGLTF));
+  let model = await loadModel("src/Box0.bin");
 }
+
 
 function getTransformationMatrix(projectionMatrix) {
   const now = Date.now() / 1000;
