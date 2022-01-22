@@ -3,12 +3,9 @@ const path = require("path");
 
 
 module.exports = {
-    entry: "./src/main.js",
+	entry: "./src/main.js",
     mode: "development",
-    output: {
-        filename: "main.js",
-        path: path.resolve(__dirname, "dist"),
-    },
+    watch: true,
     module: {
         rules: [
             {
@@ -17,9 +14,9 @@ module.exports = {
             },
             {
                 // Embed your WGSL files as strings
-                test: /\.wgsl$/i,
+                test: /\.(wgsl|gltf|bin)$/i,
                 type: "asset/source",
-            }
+            }, 
         ]
     },
     plugins: [new HtmlWebpackPlugin({

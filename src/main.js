@@ -2,6 +2,8 @@ import shaderCode from "./shader.wgsl";
 import { mat4, vec3, quat } from 'gl-matrix';
 import { vert, hor} from "./controls";
 
+
+
 let adapter, device, canvas, context, cube, aspect, infos;
 const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
 
@@ -23,22 +25,8 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
-  let model = await loadModel("Box0.bin");
-}
-
-
-async function loadModel(fileName) {
-  let content;
-  await new Promise(function(resolve) {
-    var reader = new FileReader();
-
-    reader.onloadend = function() {
-      content = reader.result;
-    };
-
-    reader.readAsArrayBuffer(fileName);
-  });
-  return content;
+  
+  console.log(JSON.parse(BoxGLTF));
 }
 
 function getTransformationMatrix(projectionMatrix) {
