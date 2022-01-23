@@ -25,7 +25,7 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
-  let model = loadModel("src/Box0");
+  let model = loadModel("src/", "Box0.gltf");
 }
 
 
