@@ -25,7 +25,7 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
-  let model = await loadModel("src/Box0.bin");
+  let model = loadModel("src/Box0");
 }
 
 
