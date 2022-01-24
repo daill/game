@@ -1,23 +1,30 @@
+import { mat4, vec3, quat } from 'gl-matrix';
+ 
 let modes = [];
 
 // load model set gltf + bin
 export function loadModel(path, fileName) {
-  
+  let model = null;
   fetch(path + fileName)
     .then(response => response.json())
-    .then(model => {
-      console.debug(model);
-      model.buffers.forEach(
-        bufferdata => {
-          console.debug(bufferdata);
-          fetch(path + bufferdata.uri)
+    .then(modelDesc => {
+      console.debug(modelDesc);
+      model = new Model(modelDesc);
+      modelDesc.buffers.forEach(bufferDesc => {
+          console.debug(bufferDesc);
+          fetch(path + bufferDesc.uri)
             .then(response => response.arrayBuffer())
-            .then(buffer => console.debug(buffer))
+            .then(buffer => {
+              console.debug("buffer " + bufferDesc.uri + " loaded with " + );
+              bufferDesc.data = buffer;
+            })
             .catch(err => console.error(err));
           }
         );
     })
     .catch(err => console.error(err));
+
+  return model;
 }
 
 // ctypes
@@ -34,16 +41,13 @@ export function loadModel(path, fileName) {
 // "MATX" -> 2*X
 //
 // POSITION, NORMAL -> VEC3
-// TANGENT, COLOR_n 
+// TANGENT, COLOR_n
+//
+//
+// Buffer <- BufferView <- Accessors
 
 class Model {
   constructor(description) {
     this.description = description;
   }
-
-  
-
-
-
-
-}
+} 
