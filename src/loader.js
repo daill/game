@@ -5,22 +5,23 @@ let modes = [];
 // load model set gltf + bin
 export function loadModel(path, fileName) {
   let model = null;
-  fetch(path + fileName)
+  model = fetch(path + fileName)
     .then(response => response.json())
     .then(modelDesc => {
       console.debug(modelDesc);
       model = new Model(modelDesc);
       modelDesc.buffers.forEach(bufferDesc => {
           console.debug(bufferDesc);
-          fetch(path + bufferDesc.uri)
+          bufferDesc.data = fetch(path + bufferDesc.uri)
             .then(response => response.arrayBuffer())
             .then(buffer => {
-              console.debug("buffer " + bufferDesc.uri + " loaded with " + );
-              bufferDesc.data = buffer;
+              console.debug("buffer " + bufferDesc.uri + " loaded with " + buffer.byteLength + " bytes");
+              return buffer;
             })
             .catch(err => console.error(err));
           }
         );
+      return model;
     })
     .catch(err => console.error(err));
 
@@ -49,5 +50,9 @@ export function loadModel(path, fileName) {
 class Model {
   constructor(description) {
     this.description = description;
+  }
+
+  get meshes() {
+    
   }
 } 
