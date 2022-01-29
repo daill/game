@@ -3,16 +3,17 @@ struct Uniforms {
 };
 
 struct VertexOut {
-  [[builtin(position)]] position : vec4<f32>;
-  [[location(0)]] color : vec4<f32>;
+  @builtin(position) position : vec4<f32>;
+  @location(0) color : vec4<f32>;
 };
 
 // vertex shader
-[[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+@binding(0) @group(0) 
+var<uniform> uniforms : Uniforms;
 
-[[stage(vertex)]]
-fn vertex_main([[location(0)]] position: vec4<f32>,
-               [[location(1)]] color: vec4<f32>) -> VertexOut
+@stage(vertex)
+fn vertex_main(@location(0) position: vec4<f32>,
+               @location(1) color: vec4<f32>) -> VertexOut
 {
   var output : VertexOut;
   output.position = uniforms.modelViewProjectionMatrix * position;
@@ -23,8 +24,8 @@ fn vertex_main([[location(0)]] position: vec4<f32>,
 
 // fragment shader
 
-[[stage(fragment)]]
-fn fragment_main(fragData: VertexOut) -> [[location(0)]] vec4<f32>
+@stage(fragment)
+fn fragment_main(fragData: VertexOut) -> @location(0) vec4<f32>
 {
   return fragData.color;
 }

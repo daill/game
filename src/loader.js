@@ -1,16 +1,16 @@
 import { mat4, vec3, quat } from 'gl-matrix';
  
-let modes = [];
+let models = [];
 
 // load model set gltf + bin
-export function loadModel(path, fileName) {
+async function loadModel(path, fileName) {
   let model = null;
-  model = fetch(path + fileName)
+  model = await fetch(path + fileName)
     .then(response => response.json())
     .then(modelDesc => {
       console.debug(modelDesc);
       model = new Model(modelDesc);
-      modelDesc.buffers.forEach(bufferDesc => {
+      /*modelDesc.buffers.forEach(bufferDesc => {
           console.debug(bufferDesc);
           bufferDesc.data = fetch(path + bufferDesc.uri)
             .then(response => response.arrayBuffer())
@@ -21,16 +21,17 @@ export function loadModel(path, fileName) {
             .catch(err => console.error(err));
           }
         );
+      console.log("model desc loaded");*/
       return model;
     })
     .catch(err => console.error(err));
 
-  return model;
+  return  model;
 }
 
 // ctypes
 // 5120 signed byte
-// 5121 unsigned byte
+// 5121 unsigned byt
 // 5122 signed short
 // 5123 unsigned short
 // 5125 unsigned int
@@ -58,18 +59,23 @@ class Model {
     this.uniformBufferSize;
     this.uniformBuffer;
     this.uniformBindGroup;
+    this.shaderCoder;
   }
 
   meshes() {
         
   }
 
-  prepare(device, projectionMatrix) {
-    this.projectionMatrix = projectionMatrix;
-    this.device = device;
+  shaderCode(code) {
+    this.shaderCoder = code;
+  }
 
+  prepare(device) {
+    this.device = device;
+    console.log(this.device);
+    console.log(this.shaderCode);
     this.shadermodule = this.device.createShaderModule({
-      code: shaderCode
+      code: this.shaderCode
     });
     // desscribing the layout of the buffer
     this.vertexBuffers = [{
@@ -129,28 +135,23 @@ class Model {
       layout: this.renderPipeline.getBindGroupLayout(0),
       entries: [
         {
-          binding: 0,
+          binding: 1,
           resource: {
             buffer: this.uniformBuffer,
-          },
+          }
         },
       ],
     });
   }
 
-  draw(passEncoder) { 
-    this.projectionMatrix = mat4.create();
-    mat4.perspective(this.projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
-    
-
-    this.transformationMatrix = getTransformationMatrix(this.projectionMatrix);
-    
+  draw(passEncoder, transformationMatrix) { 
+   
     this.device.queue.writeBuffer(
       this.uniformBuffer,
       0,
-      this.transformationMatrix.buffer,
-      this.transformationMatrix.byteOffset,
-      this.transformationMatrix.byteLength
+      transformationMatrix.buffer,
+      transformationMatrix.byteOffset,
+      transformationMatrix.byteLength
     );
 
     this.vertexBuffer = this.device.createBuffer({
@@ -169,7 +170,6 @@ class Model {
     passEncoder.draw(5);
     passEncoder.endPass();
   }
-
-
-
 } 
+
+export { loadModel, Model}

@@ -1,23 +1,52 @@
 import shaderCode from "./shader.wgsl";
 import { mat4, vec3, quat } from 'gl-matrix';
 import { vert, hor} from "./controls";
-import {loadModel} from "./loader.js";
+import { loadModel, Model} from "./loader.js";
 
 
-let adapter, device, canvas, context, cube, aspect, infos;
+let model, adapter, device, canvas, context, cube, aspect, infos;
 const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
 
-async function init() {
-  // create 
-  adapter = await window.navigator.gpu.requestAdapter();
-  device = await adapter.requestDevice();
 
+async function initializeWebGPU() {
+    // Check to ensure the user agent supports WebGPU.
+    if (!('gpu' in navigator)) {
+        console.error('User agent doesn’t support WebGPU.');
+        return false;
+    }
+
+    // Request an adapter.
+    adapter = await navigator.gpu.requestAdapter();
+
+    // requestAdapter may resolve with null if no suitable adapters are found.
+    if (!adapter) {
+        console.error('No WebGPU adapters found.');
+        return false;
+    }
+    device = await adapter.requestDevice();
+    device.lost.then((info) => {
+        console.error(`WebGPU device was lost: ${info.message}`);
+
+        device = null;
+
+        if (info.reason != 'destroyed') {
+            initializeWebGPU();
+        }
+    });
+
+    onWebGPUInitialized();
+
+    return true;
+}
+
+async function onWebGPUInitialized() {
+  // create 
   canvas = document.querySelector('#webgpu-canvas');
   context = canvas.getContext('webgpu');
 
   context.configure({
     device: device,
-    format: 'bgra8unorm'
+    format: context.getPreferredFormat(adapter), 
   });
 
   aspect = canvas.width / canvas.height;
@@ -25,8 +54,13 @@ async function init() {
 
   infos = document.querySelector(".infos");
 
-  let model = loadModel("src/", "Box0.gltf");
+  model = await loadModel("src/", "Box0.gltf");
   console.debug(model);
+
+  model.shaderCode(shaderCode);
+  console.log(shaderCode);
+  model.prepare(device);
+
 }
 
 
@@ -41,6 +75,8 @@ function getTransformationMatrix(projectionMatrix) {
 }
 
 let then = 0;
+
+
 function draw() {
   const commandEncoder = device.createCommandEncoder();
   const renderPassDescriptor = {
@@ -51,11 +87,13 @@ function draw() {
     }]
   };
 
-
+  const projectionMatrix = mat4.create();
+  mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
+  const transformationMatrix = getTransformationMatrix(projectionMatrix);
+ 
   const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+  cube.draw(passEncoder, transformationMatrix);  
   
-  cube.draw(passEncoder);
-
   device.queue.submit([commandEncoder.finish()]);
 
   requestAnimationFrame(() => {
@@ -77,7 +115,7 @@ function showWarning(e) {
 
 async function main() {
   try {
-    await init();
+    await initializeWebGPU();
   } catch (e) {
     showWarning(e);
   }
